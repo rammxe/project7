@@ -1679,10 +1679,10 @@ footer {
   .furniture-menu {
     width: 100%;
     flex-direction: row;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     justify-content: center;
-    gap: 8px;
-    padding: 20px 16px;
+    gap: 6px;
+    padding: 16px 12px;
     border-right: none;
     border-bottom: 1px solid #e8e8e8;
     height: auto;
@@ -1693,18 +1693,21 @@ footer {
   }
 
   .furniture-menu p {
-    font-size: 12px;
-    letter-spacing: 2px;
-    padding: 9px 16px;
+    font-size: 11px;
+    letter-spacing: 1px;
+    padding: 8px 0;
     margin: 0;
     border: 1px solid #ddd;
     border-radius: 30px;
     background: white;
     color: #888;
+    flex: 1;
+    text-align: center;
+    white-space: nowrap;
   }
 
   .furniture-menu p:hover {
-    padding-left: 16px;
+    padding-left: 0;
     transform: none;
     border-color: #b4985c;
     color: #b4985c;
@@ -1715,8 +1718,8 @@ footer {
   }
 
   .furniture-menu p.on {
-    font-size: 12px;
-    padding: 9px 16px;
+    font-size: 11px;
+    padding: 8px 0;
     background: #b4985c;
     color: white;
     border-color: #b4985c;
@@ -1852,6 +1855,11 @@ footer {
   }
   .section-header p {
     font-size: 13px;
+  }
+
+  .category-image-wrap,
+  .category-image-wrap img {
+    height: 210px;
   }
 
   #con03 {
