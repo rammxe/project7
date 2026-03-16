@@ -2,11 +2,9 @@ $(function () {
   // ========== GSAP 초기화 ==========
   gsap.registerPlugin(ScrollTrigger);
 
-  // 변수 선언
   let con01, con02, con03, con04, headerHeight;
   let isScrollingProgrammatically = false;
 
-  // 섹션 위치 업데이트 함수
   function updateOffsets() {
     headerHeight = $('header').outerHeight();
     con01 = $('#con01').offset().top - headerHeight;
@@ -18,9 +16,94 @@ $(function () {
   $(window).on('resize', updateOffsets);
   updateOffsets();
 
+  // ========== 모바일 햄버거 메뉴 ==========
+
+  // 햄버거 버튼 (왼쪽)
+  var $hamburger = $(`
+    <div class="hamburger" aria-label="메뉴">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+  `).prependTo('.wrap');
+
+  // 돋보기 버튼 (오른쪽)
+  var $searchBtn = $(`
+    <div class="mobile-search-btn" aria-label="검색">
+      <i class="fa-solid fa-magnifying-glass"></i>
+    </div>
+  `).appendTo('.wrap');
+
+  // 풀스크린 메뉴 패널
+  var $mobileNav = $(`
+    <nav class="mobile-nav">
+      <span class="mobile-menu-link" data-section="0">SHOP</span>
+      <span class="mobile-menu-link" data-section="1">STORY</span>
+      <span class="mobile-menu-link" data-section="2">FURNITURE</span>
+      <span class="mobile-menu-link" data-section="3">COMMUNITY</span>
+      <div class="mobile-util">
+        <a href="#">LOGIN</a>
+        <a href="#">JOIN</a>
+        <a href="#">WISH</a>
+        <a href="#">CART</a>
+        <a href="#">MY PAGE</a>
+      </div>
+      <div class="mobile-social">
+        <a href="#"><i class="fa-brands fa-instagram"></i></a>
+        <a href="#"><i class="fa-brands fa-facebook"></i></a>
+        <a href="#"><i class="fa-brands fa-youtube"></i></a>
+      </div>
+    </nav>
+  `).appendTo('body');
+
+  function openMenu() {
+    $hamburger.addClass('open');
+    $mobileNav.addClass('open');
+    $('body').css('overflow', 'hidden');
+  }
+
+  function closeMenu() {
+    $hamburger.removeClass('open');
+    $mobileNav.removeClass('open');
+    $('body').css('overflow', '');
+  }
+
+  $hamburger.on('click', function () {
+    $mobileNav.hasClass('open') ? closeMenu() : openMenu();
+  });
+
+  $(document).on('keydown', function (e) {
+    if (e.key === 'Escape') closeMenu();
+  });
+
+  $(window).on('resize', function () {
+    if ($(window).width() > 768) closeMenu();
+  });
+
+  // ========== 모바일 메뉴 → 섹션 이동 ==========
+  $mobileNav.find('.mobile-menu-link').on('click', function () {
+    var sectionIndex = parseInt($(this).data('section'));
+    closeMenu();
+    // 메뉴 닫히는 애니메이션(0.45s) 후 스크롤
+    setTimeout(function () {
+      var hh = $('header').outerHeight();
+      var target = $('section').eq(sectionIndex).offset().top - hh;
+      isScrollingProgrammatically = true;
+      $('html, body').animate(
+        { scrollTop: target },
+        {
+          duration: 700,
+          easing: 'easeInOutCubic',
+          complete: function () {
+            isScrollingProgrammatically = false;
+          },
+        },
+      );
+    }, 460);
+  });
+
   // ========== GSAP ScrollTrigger 애니메이션 ==========
 
-  // Con02 텍스트 애니메이션
   gsap.from('.section-header h2', {
     scrollTrigger: {
       trigger: '#con02',
@@ -48,7 +131,6 @@ $(function () {
     ease: 'power3.out',
   });
 
-  // Con02 카테고리 아이템 순차 애니메이션
   gsap.set('.category-item', { opacity: 0, y: 100 });
 
   gsap.to('.category-item', {
@@ -64,7 +146,6 @@ $(function () {
     ease: 'power3.out',
   });
 
-  // Con03 섹션 타이틀 애니메이션
   gsap.from('#con03 .section-title', {
     scrollTrigger: {
       trigger: '#con03',
@@ -77,7 +158,6 @@ $(function () {
     ease: 'power3.out',
   });
 
-  // Con03 Furniture Content 애니메이션
   gsap.from('.furniture-content', {
     scrollTrigger: {
       trigger: '#con03',
@@ -90,7 +170,6 @@ $(function () {
     ease: 'power3.out',
   });
 
-  // Con04 섹션 애니메이션
   gsap.from('#con04 .section-title', {
     scrollTrigger: {
       trigger: '#con04',
@@ -116,7 +195,6 @@ $(function () {
     ease: 'power3.out',
   });
 
-  // Parallax 효과 - 비주얼 배경
   gsap.to('#con01 .panel li', {
     scrollTrigger: {
       trigger: '#con01',
@@ -134,7 +212,6 @@ $(function () {
 
     let scroll = $(this).scrollTop();
 
-    // 헤더 고정 및 스타일 변경
     if (scroll >= con02) {
       $('header').addClass('on');
       $('.wrap').addClass('scrolled');
@@ -143,7 +220,6 @@ $(function () {
       $('.wrap').removeClass('scrolled');
     }
 
-    // 네비게이션 활성화
     $('#con02, #con03').removeClass('on');
 
     if (scroll >= con01 && scroll < con02) {
@@ -159,13 +235,10 @@ $(function () {
     }
   });
 
-  // ========== 네비게이션 클릭 이벤트 ==========
-
-  // 섹션으로 부드럽게 이동
+  // ========== 데스크탑 네비게이션 클릭 ==========
   function scrollToSection(index, callback) {
-    let headerHeight = $('header').outerHeight();
-    let target = $('section').eq(index).offset().top - headerHeight;
-
+    let hh = $('header').outerHeight();
+    let target = $('section').eq(index).offset().top - hh;
     $('html, body').animate(
       { scrollTop: target },
       {
@@ -178,7 +251,6 @@ $(function () {
     );
   }
 
-  // 좌측 메뉴 클릭
   $('.wrap .left li').on('click', function (e) {
     e.preventDefault();
     let i = $(this).index();
@@ -189,7 +261,6 @@ $(function () {
     });
   });
 
-  // 우측 COMMUNITY 버튼 클릭
   $('.wrap .right .co').on('click', function (e) {
     e.preventDefault();
     let lastIndex = $('section').length - 1;
@@ -200,16 +271,13 @@ $(function () {
     });
   });
 
-  // 우측 네비게이션 클릭
   $('#navi li').on('click', function () {
     let i = $(this).index();
     isScrollingProgrammatically = true;
     $('#navi li').removeClass('on').eq(i).addClass('on');
-
     scrollToSection(i, function () {
       isScrollingProgrammatically = false;
     });
-
     if (i === 1) {
       $('#con02').addClass('on');
     } else {
@@ -217,7 +285,6 @@ $(function () {
     }
   });
 
-  // 스크롤 인디케이터 클릭
   $('.scroll-indicator').on('click', function (e) {
     e.preventDefault();
     isScrollingProgrammatically = true;
@@ -229,16 +296,10 @@ $(function () {
   // ========== 가구 메뉴 인터랙션 ==========
   $('.furniture-menu p').on('click', function () {
     let i = $(this).index();
-
-    // 메뉴 활성화
     $('.furniture-menu p').removeClass('on');
     $(this).addClass('on');
-
-    // 상단 이미지 전환
     $('.furniture-visuals .furniture-panel').removeClass('active');
     $('.furniture-visuals .furniture-panel').eq(i).addClass('active');
-
-    // 하단 이미지 + 설명 전환
     $('.bottom .furniture-panel').removeClass('active');
     $('.bottom .furniture-panel').eq(i).addClass('active');
   });
@@ -273,7 +334,6 @@ $(function () {
     loop: false,
     on: {
       slideChange: function () {
-        // 슬라이드 변경 시 약간의 스케일 애니메이션
         gsap.from(this.slides[this.activeIndex], {
           scale: 0.9,
           duration: 0.5,
@@ -288,33 +348,27 @@ $(function () {
   let $panel = $('#con01 .panel li');
   let total = $panel.length;
 
-  // 초기 설정: 첫 번째 이미지만 보이게
   $panel.css({ opacity: 0, display: 'block' });
   $panel.eq(0).css('opacity', 1);
 
   function crossfade() {
     let nextSlide = (currentSlide + 1) % total;
-
-    // GSAP으로 부드러운 크로스페이드
     gsap.to($panel.eq(currentSlide), {
       opacity: 0,
       duration: 1.5,
       ease: 'power2.inOut',
     });
-
     gsap.to($panel.eq(nextSlide), {
       opacity: 1,
       duration: 1.5,
       ease: 'power2.inOut',
     });
-
     currentSlide = nextSlide;
   }
 
-  // 5초마다 자동 슬라이드
   setInterval(crossfade, 3000);
 
-  // ========== 마우스 커서 효과 (선택사항) ==========
+  // ========== 마우스 커서 효과 ==========
   let cursorFollower = $('<div class="cursor-follower"></div>');
   $('body').append(cursorFollower);
 
@@ -327,24 +381,15 @@ $(function () {
     });
   });
 
-  // 링크 호버 시 커서 확대
   $('a, .category-item, .swiper-slide')
     .on('mouseenter', function () {
-      gsap.to(cursorFollower, {
-        scale: 2,
-        duration: 0.3,
-        ease: 'power2.out',
-      });
+      gsap.to(cursorFollower, { scale: 2, duration: 0.3, ease: 'power2.out' });
     })
     .on('mouseleave', function () {
-      gsap.to(cursorFollower, {
-        scale: 1,
-        duration: 0.3,
-        ease: 'power2.out',
-      });
+      gsap.to(cursorFollower, { scale: 1, duration: 0.3, ease: 'power2.out' });
     });
 
-  // ========== 스크롤 진행 표시 (선택사항) ==========
+  // ========== 스크롤 진행 표시 ==========
   let progressBar = $('<div class="scroll-progress"></div>');
   $('body').append(progressBar);
 
@@ -353,7 +398,6 @@ $(function () {
     let docHeight = $(document).height();
     let winHeight = $(window).height();
     let scrollPercent = (scrollTop / (docHeight - winHeight)) * 100;
-
     gsap.to(progressBar, {
       width: scrollPercent + '%',
       duration: 0.3,
@@ -370,13 +414,13 @@ $(function () {
     });
   });
 
-  // ========== 부드러운 스크롤을 위한 easing 함수 추가 ==========
+  // ========== easing 함수 ==========
   $.easing.easeInOutCubic = function (x, t, b, c, d) {
     if ((t /= d / 2) < 1) return (c / 2) * t * t * t + b;
     return (c / 2) * ((t -= 2) * t * t + 2) + b;
   };
 
-  // ========== 카테고리 아이템 3D 틸트 효과 ==========
+  // ========== 카테고리 3D 틸트 효과 ==========
   $('.category-item').each(function () {
     let $item = $(this);
     let $imageWrap = $item.find('.category-image-wrap');
@@ -385,16 +429,11 @@ $(function () {
       let rect = this.getBoundingClientRect();
       let x = e.clientX - rect.left;
       let y = e.clientY - rect.top;
-
       let centerX = rect.width / 2;
       let centerY = rect.height / 2;
-
-      let rotateX = (y - centerY) / 10;
-      let rotateY = (centerX - x) / 10;
-
       gsap.to($imageWrap, {
-        rotationX: rotateX,
-        rotationY: rotateY,
+        rotationX: (y - centerY) / 10,
+        rotationY: (centerX - x) / 10,
         duration: 0.3,
         ease: 'power2.out',
         transformPerspective: 1000,
@@ -414,95 +453,78 @@ $(function () {
   // ========== View More 버튼 애니메이션 ==========
   $('.view-more-btn').each(function () {
     let $btn = $(this);
-
     $btn.on('mouseenter', function () {
-      gsap.to($btn, {
-        x: 10,
-        duration: 0.3,
-        ease: 'power2.out',
-      });
+      gsap.to($btn, { x: 10, duration: 0.3, ease: 'power2.out' });
     });
-
     $btn.on('mouseleave', function () {
-      gsap.to($btn, {
-        x: 0,
-        duration: 0.3,
-        ease: 'power2.out',
-      });
+      gsap.to($btn, { x: 0, duration: 0.3, ease: 'power2.out' });
     });
   });
 
-  // ========== 추가 CSS 스타일 동적 삽입 ==========
+  // ========== 추가 CSS 동적 삽입 ==========
   $('<style>')
     .text(
       `
-      .cursor-follower {
-        position: fixed;
-        width: 20px;
-        height: 20px;
-        border-radius: 50%;
-        background: rgba(180, 152, 92, 0.3);
-        pointer-events: none;
-        z-index: 9999;
-        transform: translate(-50%, -50%);
-        transition: background 0.3s ease;
-        mix-blend-mode: difference;
+    .cursor-follower {
+      position: fixed;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: rgba(180, 152, 92, 0.3);
+      pointer-events: none;
+      z-index: 9999;
+      transform: translate(-50%, -50%);
+      transition: background 0.3s ease;
+      mix-blend-mode: difference;
+    }
+    .scroll-progress {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #b4985c, #d4af37);
+      z-index: 10000;
+      box-shadow: 0 0 10px rgba(180, 152, 92, 0.5);
+    }
+    @media (min-width: 769px) {
+      .hamburger,
+      .mobile-search-btn,
+      .mobile-nav {
+        display: none !important;
       }
-      
-      .scroll-progress {
-        position: fixed;
-        top: 0;
-        left: 0;
-        height: 3px;
-        background: linear-gradient(90deg, #b4985c, #d4af37);
-        z-index: 10000;
-        box-shadow: 0 0 10px rgba(180, 152, 92, 0.5);
-      }
-    `,
+    }
+  `,
     )
     .appendTo('head');
 
-  // ========== 반응형 대응 ==========
+  // ========== 반응형 커서 처리 ==========
   function handleResponsive() {
-    if ($(window).width() <= 768) {
-      // 모바일에서는 커서 효과 제거
-      $('.cursor-follower').hide();
-    } else {
-      $('.cursor-follower').show();
-    }
+    $(window).width() <= 768
+      ? $('.cursor-follower').hide()
+      : $('.cursor-follower').show();
   }
 
   handleResponsive();
   $(window).on('resize', handleResponsive);
 
-  // ========== 이미지 즉시 표시 (Lazy Loading 제거) ==========
-  // 모든 이미지를 즉시 보이게 설정
+  // ========== 이미지 즉시 표시 ==========
   $('img').css('opacity', 1);
 
-  // 이미지 로드 애니메이션 (옵션 - 부드러운 페이드인)
   $('img')
-    .not('.footer-logo img, #con01 .panel li') // 배경 이미지는 제외
+    .not('.footer-logo img, #con01 .panel li')
     .each(function () {
       let $img = $(this);
-
-      // 이미 로드된 이미지 처리
       if (this.complete) {
         $img.css('opacity', 1);
       } else {
-        // 로딩 중인 이미지는 페이드인
         $img.css('opacity', 0.3);
         $img.on('load', function () {
-          gsap.to($img, {
-            opacity: 1,
-            duration: 0.5,
-            ease: 'power2.out',
-          });
+          gsap.to($img, { opacity: 1, duration: 0.5, ease: 'power2.out' });
         });
       }
     });
 
   // ========== 푸터 애니메이션 ==========
-  // 초기 상태 설정
   gsap.set('.social-icon', { opacity: 1, scale: 1 });
 
   gsap.from('.footer-logo', {
